@@ -1,6 +1,5 @@
 package org.smee;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.smee.config.KafkaConfiguration;

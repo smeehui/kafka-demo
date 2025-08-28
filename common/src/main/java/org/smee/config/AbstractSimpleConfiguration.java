@@ -16,7 +16,7 @@ public abstract class AbstractSimpleConfiguration implements Configuration {
 
     @Override
     public void loadConfigProperties(String prefix) {
-        try (InputStream resource = this.getClass().getClassLoader().getResourceAsStream("application.properties");) {
+        try (InputStream resource = this.getClass().getClassLoader().getResourceAsStream("application.properties")) {
             if (resource == null) {
                 return;
             }
