@@ -16,13 +16,18 @@ public class Main {
         try (KafkaConsumer<String, Envelope> consumer = new KafkaConsumer<>(con.getProperties())) {
             consumer.subscribe(Collections.singletonList("postgres.public.smee"));
             SmeeMapper instance = SmeeMapper.INSTANCE;
-            while (true) {
-                var records = consumer.poll(Duration.ofMillis(1000));
-                for (var record : records) {
-                    Envelope env = record.value();
-                    log.info( "before {}", instance.toEntity(env.getBefore()));
-                    log.info( "after {}", instance.toEntity(env.getAfter()));
+            try {
+                while (true) {
+                    var records = consumer.poll(Duration.ofMillis(1000));
+                    for (var record : records) {
+                        Envelope env = record.value();
+                        log.info( "before {}", instance.toEntity(env.getBefore()));
+                        log.info( "after {}", instance.toEntity(env.getAfter()));
+                    }
                 }
+            } catch (Exception e) {
+                consumer.unsubscribe();
+                consumer.close();
             }
         }
 

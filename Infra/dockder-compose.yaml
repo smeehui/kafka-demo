@@ -1,0 +1,73 @@
+version: '3.8'
+services:
+  zookeeper:
+    image: 'confluentinc/cp-zookeeper:7.6.1'
+    volumes:
+      - ./Zookeeper/zookeeper.properties:/etc/Zookeeper/zookeeper.properties
+      - ./Log4j/log4j.properties:/config/log4j.properties
+    environment:
+      ZOOKEEPER_CONFIG: /etc/Zookeeper/zookeeper.properties
+    ports:
+      - '2181:2181'
+    command: ["zookeeper-server-start", "/etc/Zookeeper/zookeeper.properties"]
+
+  kafka:
+    image: 'confluentinc/cp-kafka:7.6.1'
+    depends_on:
+      - zookeeper
+    volumes:
+      - ./Kafka/:/etc/kafka/
+      - ./Log4j/:/etc/log4j/
+    environment:
+      KAFKA_CONFIG: /etc/kafka/server.properties
+      KAFKA_LOG4J_OPTS: -Dlog4j.configuration=file:/etc/log4j/log4j.properties
+    ports:
+      - '9092:9092'
+      - '9094:9094'
+    command: ["kafka-server-start", "/etc/kafka/server.properties"]
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: smee
+    # Cấu hình wal_level=logical là BẮT BUỘC để Debezium hoạt động
+    command: -c wal_level=logical
+
+  db-connect:
+    container_name: connect
+    build: KafkaDBConnect
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_GROUP_ID: "1"
+      CONNECT_CONFIG_STORAGE_TOPIC: my_connect_configs
+      CONNECT_OFFSET_STORAGE_TOPIC: my_connect_offsets
+      CONNECT_STATUS_STORAGE_TOPIC: my_connect_statuses
+
+      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_REST_PORT: 8083
+    ports:
+      - "8083:8083"
+
+    depends_on:
+      - kafka
+      - schema-registry
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.7.0
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
