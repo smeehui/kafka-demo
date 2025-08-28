@@ -1,0 +1,55 @@
+import com.github.davidmc24.gradle.plugin.avro.GenerateAvroJavaTask
+plugins {
+    id 'java'
+    id "com.github.davidmc24.gradle.plugin.avro" version "1.9.1"
+}
+
+group = 'org.smee'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://packages.confluent.io/maven"
+    }
+}
+
+avro {
+    setCreateSetters(true)
+}
+
+dependencies {
+    implementation project(":common")
+
+    implementation 'io.debezium:debezium-api:2.5.0.Final'
+    implementation 'io.debezium:debezium-embedded:2.5.0.Final'
+    // https://mvnrepository.com/artifact/io.debezium/debezium-connector-postgres
+    implementation "io.debezium:debezium-connector-postgres:2.5.0.Final"
+    // https://mvnrepository.com/artifact/io.confluent/kafka-avro-serializer
+    implementation("io.confluent:kafka-avro-serializer:7.9.2")
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+}
+\
+def generateAvro = tasks.register("generateAvro", GenerateAvroJavaTask) {
+    source("src/main/resources/avro")
+    outputDir = file("build/generated-main-avro-avsc")
+}
+
+tasks.named("compileJava").configure {
+    source(generateAvro)
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += ["build/generated-main-avro-avsc"]
+        }
+    }
+}
+test {
+    useJUnitPlatform()
+}

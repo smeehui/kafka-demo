@@ -1,0 +1,5 @@
+rootProject.name = 'kafka-demo'
+include 'kafka-basics'
+include 'db-kafka-demo'
+include 'common'
+
