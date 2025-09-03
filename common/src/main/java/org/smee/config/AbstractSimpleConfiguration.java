@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Getter
@@ -24,6 +26,9 @@ public abstract class AbstractSimpleConfiguration implements Configuration {
                 if (line.startsWith(prefix)) {
                     String key = line.split("=")[0].substring(prefix.length() + 1).trim();
                     String value = line.split("=")[1].trim();
+                    if (value.startsWith("${")){
+                        value = System.getenv(processEnvValue(value));
+                    }
                     properties.put(key, value);
                 }
             });
@@ -32,5 +37,18 @@ public abstract class AbstractSimpleConfiguration implements Configuration {
         }
 
         log.info("Config loaded: {}", properties);
+    }
+
+    private String processEnvValue(String value) {
+        // The regex pattern to match and capture the value inside ${...}
+        String regex = "\\$\\{([^}]+)}";
+
+        // Compile the regex pattern
+        Pattern pattern = Pattern.compile(regex);
+
+        // Create a Matcher object
+        Matcher matcher = pattern.matcher(value);
+
+        return matcher.find() ? matcher.group(1) : "";
     }
 }
