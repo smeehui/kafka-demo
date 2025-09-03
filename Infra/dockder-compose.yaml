@@ -48,6 +48,10 @@ services:
       CONNECT_OFFSET_STORAGE_TOPIC: my_connect_offsets
       CONNECT_STATUS_STORAGE_TOPIC: my_connect_statuses
 
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+
       CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
       CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
@@ -62,6 +66,7 @@ services:
     depends_on:
       - kafka
       - schema-registry
+      - postgres
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.7.0
@@ -71,3 +76,14 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+
+  conduktor:
+    image: conduktor/conduktor-platform:latest
+    depends_on:
+      - schema-registry
+    ports:
+      - "8080:8080"
+    environment:
+      CONDUKTOR_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      CONDUKTOR_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CDK_DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/

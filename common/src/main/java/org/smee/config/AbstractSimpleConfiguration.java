@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
@@ -32,7 +31,7 @@ public abstract class AbstractSimpleConfiguration implements Configuration {
                     properties.put(key, value);
                 }
             });
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -41,7 +40,7 @@ public abstract class AbstractSimpleConfiguration implements Configuration {
 
     private String processEnvValue(String value) {
         // The regex pattern to match and capture the value inside ${...}
-        String regex = "\\$\\{([^}]+)}";
+        String regex = "\\$\\{([^}]+)\\}";
 
         // Compile the regex pattern
         Pattern pattern = Pattern.compile(regex);

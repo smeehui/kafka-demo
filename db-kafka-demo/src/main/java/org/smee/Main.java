@@ -5,18 +5,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
+import org.smee.config.CustomRebalanceListener;
 import org.smee.config.KafkaConfiguration;
 import org.smee.dto.LogType;
 import org.smee.dto.Logs;
 import org.smee.dto.Smee;
 import org.smee.mapper.SmeeMapper;
-import org.smee.repo.impl.MongoLogRepo;
+import org.smee.repo.impl.PostgresLogRepo;
 import org.smee.services.LogService;
 import postgres.public$.smee.Envelope;
 
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -30,8 +33,8 @@ public class Main {
         ExecutorService executor = Executors.newFixedThreadPool(2);
         ObjectMapper mapper = new ObjectMapper();
 
-//        LogService logService = new LogService(new PostgresLogRepo());
-        LogService logService = new LogService(new MongoLogRepo());
+        LogService logService = new LogService(new PostgresLogRepo());
+//        LogService logService = new LogService(new MongoLogRepo());
 
         executor.submit(() -> startConsumer(
                 "postgres.public.smee",
@@ -88,8 +91,10 @@ public class Main {
             Consumer<ConsumerRecord<?, ?>> consumerFunc
     ) {
         try (KafkaConsumer<?, ?> consumer = consumerSupplier.get()) {
-            consumer.subscribe(Collections.singletonList(topic));
+            consumer.subscribe(Collections.singletonList(topic), new CustomRebalanceListener());
             try {
+            Set<TopicPartition> assignment = consumer.assignment();
+            consumer.seekToEnd(assignment);
                 while (true) {
                     var records = consumer.poll(Duration.ofMillis(1000));
                     for (var record : records) {
@@ -97,8 +102,6 @@ public class Main {
                     }
                 }
             } catch (Exception e) {
-                consumer.unsubscribe();
-                consumer.close();
                 log.error("Error ", e);
             }
         }
