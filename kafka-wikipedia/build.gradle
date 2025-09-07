@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+group = 'org.smee'
+version = '1.0-SNAPSHOT'
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': 'org.smee.KafkaWikimediaApplication'
+    }
+    archiveClassifier.set('') // Optional: Removes the "-all" suffix from the jar name
+}
+
+subprojects {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation project(':common')
+        implementation("org.apache.kafka:kafka-clients:3.9.0")
+        implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+
+        annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+        annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    }
+}
+
+dependencies {
+    implementation project(':kafka-wikipedia:producer')
+    implementation project(':kafka-wikipedia:consumer')
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation("org.slf4j:slf4j-api:2.0.17")
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    implementation("org.slf4j:slf4j-simple:2.0.17")
+
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly("org.projectlombok:lombok:1.18.38")
+    annotationProcessor("org.projectlombok:lombok:1.18.38")
+}
+
+test {
+    useJUnitPlatform()
+}

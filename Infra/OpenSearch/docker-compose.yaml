@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  opensearch:
+    image: opensearchproject/opensearch:3.2.0
+    environment:
+      discovery.type: single-node
+      DISABLE_SECURITY_PLUGIN: true
+    ports:
+      - '9200:9200'
+      - '9600:9600'
+
+  op-dasboard:
+    build: Dashboard/
+    depends_on:
+      - opensearch
+    ports:
+      - '5601:5601'
+    volumes:
+      - ./Dashboard/os-dashboard-config.yaml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml

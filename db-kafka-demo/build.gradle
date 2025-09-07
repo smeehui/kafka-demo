@@ -9,9 +9,6 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
-    maven {
-        url "https://packages.confluent.io/maven"
-    }
 }
 
 avro {
@@ -23,21 +20,17 @@ dependencies {
 
     implementation 'io.debezium:debezium-api:2.5.0.Final'
     implementation 'io.debezium:debezium-embedded:2.5.0.Final'
-    // https://mvnrepository.com/artifact/io.debezium/debezium-connector-postgres
     implementation "io.debezium:debezium-connector-postgres:2.5.0.Final"
-    // https://mvnrepository.com/artifact/io.confluent/kafka-avro-serializer
-    implementation("io.confluent:kafka-avro-serializer:7.9.2")
-    // MapStruct
+    implementation "io.confluent:kafka-avro-serializer:7.9.2"
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     implementation 'org.postgresql:postgresql:42.7.3'
     implementation 'org.mongodb:mongodb-driver-sync:5.2.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2'
 
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
-
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 }
-\
+
 def generateAvro = tasks.register("generateAvro", GenerateAvroJavaTask) {
     source("src/main/resources/avro")
     outputDir = file("build/generated-main-avro-avsc")

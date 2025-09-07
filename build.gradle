@@ -5,15 +5,14 @@ plugins {
 group = 'org.smee'
 version = '1.0-SNAPSHOT'
 
-repositories {
-    mavenCentral()
-}
-
 subprojects {
     apply plugin: 'java'
 
     repositories {
         mavenCentral()
+        maven {
+            url "https://packages.confluent.io/maven"
+        }
     }
     dependencies {
         // https://mvnrepository.com/artifact/org.slf4j/slf4j-api

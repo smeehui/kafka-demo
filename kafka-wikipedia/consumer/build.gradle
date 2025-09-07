@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.smee'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+// https://mvnrepository.com/artifact/org.opensearch.client/opensearch-rest-high-level-client
+    implementation 'org.opensearch.client:opensearch-rest-high-level-client:2.19.3'
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Slf4j
-public class Main {
+public class KafkaDemoApplication {
     public static void main(String[] args) {
         KafkaConfiguration con = new KafkaConfiguration();
         SmeeMapper instance = SmeeMapper.INSTANCE;
